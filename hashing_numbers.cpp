@@ -13,6 +13,16 @@ void initTable()
       hashtable[i][j] = INT_MIN;
 }
 
+/* to get hash for a string
+const int p = 31;
+long long hash = 0, 
+p_pow = 1;
+string s = "cuckoo";
+for (size_t i=0; i<s.length(); ++i)
+{
+	hash += (s[i] - 'a' + 1) * p_pow;
+	p_pow *= p;
+}*/
 
 int hash(int function, int key)
 {
