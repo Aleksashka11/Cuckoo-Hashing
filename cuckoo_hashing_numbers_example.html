@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Cuckoo Hashing</title>
+  <style>
+  svg #line1 {
+  fill: none;
+  stroke: black;
+  stroke-width: 2;
+  transition: all 4s ease-in-out;
+  }
+  svg #line2 {
+  fill: none;
+  stroke: black;
+  stroke-width: 2;
+  transition: all 4s ease-in-out;
+  }
+  .lines{
+      -ms-flex: 70%; /* IE10 */
+      flex: 70%;
+      background-color: transparent;
+      padding: 20px;
+  }
+  </style>
+</head>
+<body onload="appear()">
+  <div id="inp" style="margin-left: 950px; position: fixed; margin-top: -30px">
+  <p><b>Исходные данные:</b><br>
+    <input type="text" size="20" value="30 47 11 45 26 39 68 61">
+  </p>
+  <p><b>Хэш-функция 1:</b><br>
+    <input type="text" size="20" value="key%8">
+  </p>
+  <p><b>Хэш-функция 2:</b><br>
+    <input type="text" size="20" value="(key/8)%8">
+  </p>
+  <input type="submit" size="20" value="Получить">
+  </div>
+  <div id="blocks1">
+    <div id="block1" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-top: 100px; margin-left: 300px"></div>
+    <div id="block2" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 300px"></div>
+    <div id="block3" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 300px"></div>
+    <div id="block4" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 300px"></div>
+    <div id="block5" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 300px"></div>
+    <div id="block6" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 300px"></div>
+    <div id="block7" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 300px"></div>
+    <div id="block8" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 300px"></div>
+    <div id="block9" style="display: block; width: 40px; height: 40px; border: 1px solid white; margin-left: 300px"></div>
+  </div>
+  <div id="blocks2">
+    <div id="block_1" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-top: -370px; margin-left: 700px"></div>
+    <div id="block_2" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 700px"></div>
+    <div id="block_3" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 700px"></div>
+    <div id="block_4" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 700px"></div>
+    <div id="block_5" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 700px"></div>
+    <div id="block_6" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 700px"></div>
+    <div id="block_7" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 700px"></div>
+    <div id="block_8" style="display: block; width: 40px; height: 40px; border: 1px solid black; margin-left: 700px"></div>
+    <div id="block_9" style="display: block; width: 40px; height: 40px; border: 1px solid white; margin-left: 700px"></div>
+  </div>
+  <div id="numbers">
+  <div id="number1" style="height: 20px; width: 60px; display: none; color: transparent; transition: all 2s ease-in-out;">
+    <p id="try" style="color: black; margin-left: 160px; margin-top: -400px; font-size: 25px">30</p>
+  </div>
+  <div id="number2" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 231px; margin-top: -130px; font-size: 25px; color: black">30</p>
+  </div>
+  <div id="number3" style="height: 20px; width: 60px; display: none; color: transparent; transition: all 2s ease-in-out;">
+    <p id="try" style="color: black; margin-left: 160px; margin-top: -270px; font-size: 25px">47</p>
+  </div>
+  <div id="number4" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 231px; margin-top: 20px; font-size: 25px; color: black">47</p>
+  </div>
+  <div id="number5" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 160px; margin-top: -330px; font-size: 25px; color: black">11</p>
+  </div>
+  <div id="number6" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 231px; margin-top: -185px; font-size: 25px; color: black">11</p>
+  </div>
+  <div id="number7" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 160px; margin-top: -160px; font-size: 25px; color: black">45</p>
+  </div>
+  <div id="number8" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 231px; margin-top: 60px; font-size: 25px; color: black">45</p>
+  </div>
+  <div id="number9" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 160px; margin-top: -260px; font-size: 25px; color: black">26</p>
+  </div>
+  <div id="number10" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 231px; margin-top: -140px; font-size: 25px; color: black">26</p>
+  </div>
+  <div id="number11" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 160px; margin-top: -160px; font-size: 25px; color: black">39</p>
+  </div>
+  <div id="number12" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: 30px; font-size: 25px; color: black">47</p>
+  </div>
+  <div id="number13" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 231px; margin-top: -20px; font-size: 25px; color: black">39</p>
+  </div>
+  <div id="number14" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: -200px; font-size: 25px; color: black">11</p>
+  </div>
+  <div id="number15" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: 70px; font-size: 25px; color: black">45</p>
+  </div>
+  <div id="number16" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: -150px; font-size: 25px; color: black">26</p>
+  </div>
+  <div id="number17" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 160px; margin-top: -120px; font-size: 25px; color: black">68</p>
+  </div>
+  <div id="number18" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 231px; margin-top: 70px; font-size: 25px; color: black">68</p>
+  </div>
+  <div id="number19" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 160px; margin-top: -200px; font-size: 25px; color: black">61</p>
+  </div>
+  <div id="number20" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: 70px; font-size: 25px; color: black">45</p>
+  </div>
+  <div id="number21" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: -140px; font-size: 25px; color: black">26</p>
+  </div>
+  <div id="number22" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: 55px; font-size: 25px; color: black">68</p>
+  </div>
+  <div id="number23" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 231px; margin-top: 25px; font-size: 25px; color: black">61</p>
+  </div>
+  <div id="number24" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 511px; margin-top: 30px; font-size: 25px; color: black">47</p>
+  </div>
+  <div id="number25" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: -190px; font-size: 25px; color: black">26</p>
+  </div>
+  <div id="number26" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: 20px; font-size: 25px; color: black">11</p>
+  </div>
+  <div id="number27" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: 20px; font-size: 25px; color: black">68</p>
+  </div>
+  <div id="number28" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: 30px; font-size: 25px; color: black">61</p>
+  </div>
+  <div id="number29" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 311px; margin-top: 65px; font-size: 25px; color: black">39</p>
+  </div>
+  <div id="number30" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 661px; margin-top: -100px; font-size: 25px; color: black">45</p>
+  </div>
+  <div id="number31" style="height: 20px; width: 60px; display: none; transition: all 2s ease-in-out;">
+    <p style="color: black; margin-left: 711px; margin-top: -20px; font-size: 25px; color: black">47</p>
+  </div>
+</div>
+
+  <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js'></script>
+  <script>
+  function appear(){
+
+    $("#number1").fadeIn('slow');
+    document.getElementById('number1').style.display = "block";
+
+    setTimeout(function () {
+      $('#block7').css({ transform: 'scale(1.1)' });
+    }, 1000);
+
+    setTimeout(function () {
+      $('#number1').css({ transform: 'translate(70px,275px)' });
+    }, 2500);
+
+
+    setTimeout(function () {
+      $("#number1").fadeOut('slow');
+      $("#number2").fadeIn('slow');
+      $('#number2').css({ transform: 'translate(80px,0px)' });
+    }, 3500);
+
+  setTimeout(function () {
+    $('#block7').css({ transform: 'scale(1)' });
+}, 4500);
+
+setTimeout(function () {
+$("#number3").fadeIn('slow');
+document.getElementById('number3').style.display = "block";
+}, 6500);
+
+
+setTimeout(function () {
+  $('#block8').css({ transform: 'scale(1.1)' });
+}, 7500);
+
+setTimeout(function () {
+  $('#number3').css({ transform: 'translate(70px,305px)' });
+}, 8500);
+
+setTimeout(function () {
+  $("#number3").fadeOut('slow');
+  $("#number4").fadeIn('slow');
+  $('#number4').css({ transform: 'translate(80px,0px)' });
+}, 9500);
+
+setTimeout(function () {
+  $('#block8').css({ transform: 'scale(1)' });
+}, 11500);
+
+setTimeout(function () {
+$("#number5").fadeIn('slow');
+document.getElementById('number5').style.display = "block";
+}, 12500);
+
+
+setTimeout(function () {
+  $('#block4').css({ transform: 'scale(1.1)' });
+}, 13500);
+
+setTimeout(function () {
+  $('#number5').css({ transform: 'translate(70px,150px)' });
+}, 15000);
+
+setTimeout(function () {
+  $("#number5").fadeOut('slow');
+  $("#number6").fadeIn('slow');
+  $('#number6').css({ transform: 'translate(80px,0px)' });
+}, 16500);
+
+setTimeout(function () {
+  $('#block4').css({ transform: 'scale(1)' });
+}, 18000);
+
+setTimeout(function () {
+$("#number7").fadeIn('slow');
+document.getElementById('number7').style.display = "block";
+}, 19500);
+
+setTimeout(function () {
+  $('#block6').css({ transform: 'scale(1.1)' });
+}, 20500);
+
+setTimeout(function () {
+  $('#number7').css({ transform: 'translate(70px,230px)' });
+}, 21500);
+
+setTimeout(function () {
+  $("#number7").fadeOut('slow');
+  $("#number8").fadeIn('slow');
+  $('#number8').css({ transform: 'translate(80px,0px)' });
+}, 22500);
+
+setTimeout(function () {
+  $('#block6').css({ transform: 'scale(1)' });
+}, 23500);
+
+setTimeout(function () {
+$("#number9").fadeIn('slow');
+document.getElementById('number9').style.display = "block";
+}, 24500);
+
+setTimeout(function () {
+  $('#block3').css({ transform: 'scale(1.1)' });
+}, 25500);
+
+setTimeout(function () {
+  $('#number9').css({ transform: 'translate(70px,120px)' });
+}, 26500);
+
+setTimeout(function () {
+  $("#number9").fadeOut('slow');
+  $("#number10").fadeIn('slow');
+  $('#number10').css({ transform: 'translate(80px,0px)' });
+}, 27500);
+
+setTimeout(function () {
+  $('#block3').css({ transform: 'scale(1)' });
+}, 28500);
+
+setTimeout(function () {
+$("#number11").fadeIn('slow');
+document.getElementById('number11').style.display = "block";
+}, 29500);
+
+setTimeout(function () {
+  $('#block8').css({ transform: 'scale(1.1)' });
+}, 30500);
+
+setTimeout(function () {
+  $('#number11').css({ transform: 'translate(70px,350px)' });
+}, 31500);
+
+setTimeout(function () {
+$('#block_6').css({ transform: 'scale(1.1)' });
+}, 32500);
+
+setTimeout(function () {
+  $("#number4").fadeOut('slow');
+  $("#number11").fadeOut('slow');
+  $("#number6").fadeOut('slow');
+  $("#number8").fadeOut('slow');
+  $("#number10").fadeOut('slow');
+  $("#number12").fadeIn('slow');
+  $("#number13").fadeIn('slow');
+  $("#number14").fadeIn('slow');
+  $("#number15").fadeIn('slow');
+  $("#number16").fadeIn('slow');
+}, 33500);
+
+setTimeout(function () {
+$('#number12').css({ transform: 'translate(400px,-80px)' });
+$('#number13').css({ transform: 'translate(80px, 0px)' });
+}, 34500);
+
+setTimeout(function () {
+$('#block_6').css({ transform: 'scale(1)' });
+$('#block8').css({ transform: 'scale(1)' });
+}, 35000);
+
+setTimeout(function () {
+$("#number17").fadeIn('slow');
+document.getElementById('number17').style.display = "block";
+}, 36000);
+
+setTimeout(function () {
+  $('#block5').css({ transform: 'scale(1.1)' });
+}, 37000);
+
+setTimeout(function () {
+  $('#number17').css({ transform: 'translate(70px,190px)' });
+}, 38000);
+
+setTimeout(function () {
+  $("#number17").fadeOut('slow');
+  $("#number18").fadeIn('slow');
+  $('#number18').css({ transform: 'translate(80px,0px)' });
+}, 39000);
+
+setTimeout(function () {
+  $('#block5').css({ transform: 'scale(1)' });
+}, 40000);
+
+setTimeout(function () {
+$("#number19").fadeIn('slow');
+document.getElementById('number19').style.display = "block";
+}, 41000);
+
+setTimeout(function () {
+  $('#block6').css({ transform: 'scale(1.1)' });
+}, 42000);
+
+setTimeout(function () {
+  $('#number19').css({ transform: 'translate(70px,230px)' });
+}, 43000);
+
+setTimeout(function () {
+  $('#block_6').css({ transform: 'scale(1.1)' });
+}, 43000);
+
+
+setTimeout(function () {
+  $("#number15").fadeOut('slow');
+  $("#number16").fadeOut('slow');
+  $("#number18").fadeOut('slow');
+  $("#number19").fadeOut('slow');
+  $("#number20").fadeIn('slow');
+  $("#number21").fadeIn('slow');
+  $("#number22").fadeIn('slow');
+  $("#number23").fadeIn('slow');
+}, 44000);
+
+
+setTimeout(function () {
+  $('#number23').css({ transform: 'translate(80px,0px)' });
+  $('#number20').css({ transform: 'translate(350px,0px)' });
+}, 45000);
+
+setTimeout(function () {
+  $('#block6').css({ transform: 'scale(1)' });
+  $('#block8').css({ transform: 'scale(1.1)' });
+}, 46000);
+
+setTimeout(function () {
+$("#number12").fadeOut('slow');
+$("#number20").fadeOut('slow');
+$("#number13").fadeOut('slow');
+$("#number14").fadeOut('slow');
+$("#number21").fadeOut('slow');
+$("#number22").fadeOut('slow');
+$("#number23").fadeOut('slow');
+$("#number31").fadeIn('slow');
+$("#number25").fadeIn('slow');
+$("#number26").fadeIn('slow');
+$("#number27").fadeIn('slow');
+$("#number28").fadeIn('slow');
+$("#number30").fadeIn('slow');
+$("#number29").fadeIn('slow');
+}, 47000);
+
+setTimeout(function () {
+  $('#number30').css({ transform: 'translate(50px,0px)' });
+  $('#number31').css({ transform: 'translate(-400px,80px)' });
+  $('#number29').css({ transform: 'translate(400px,-120px)' });
+  $('#block_6').css({ transform: 'scale(1)' });
+  $('#block_5').css({ transform: 'scale(1.1)' });
+}, 48000);
+
+setTimeout(function () {
+  $('#block_5').css({ transform: 'scale(1)' });
+  $('#block8').css({ transform: 'scale(1)' });
+}, 49000);
+
+
+  }
+  </script>
+</body>
+</html>
